@@ -1,0 +1,79 @@
+!
+! $System: DionisNX
+! $Version: DionisNX 2.0-3 (Decennium UTM)
+! $Build: dionisnx-c-2.0-3-211108
+! $Date: 2024-08-02 12:57:00
+!
+timezone MSK-3
+session timeout adm none
+integrity-mem interval 30
+!
+hostname Dionis2
+!
+ip path-mtu-discovery
+ip tcp ecn server-mode
+ip tcp selective-ack
+ip tcp syncookies
+ip tcp timestamps
+ip tcp window-scaling
+!
+ip access-group no-invalid forward
+ip access-list no-invalid
+ deny state invalid
+!
+controller serial 0
+ listen
+!
+interface ethernet 0
+ ip address 192.168.1.1/24
+ enable
+!
+interface ethernet 1
+ description "Cluster peer-link"
+ ip address 10.10.1.2/30
+!
+interface ethernet 7
+ ip address 10.158.54.1/24
+ enable
+!
+interface vpn 1
+ mode tun
+ ifconfig 10.8.0.1:10.8.0.2
+ connection block1
+  proto udp
+  remote 172.16.158.2
+!
+ip route 10.0.0.0/24 vpn 1
+!
+service log
+ log
+ alert beep
+ size 262144 131072
+ trace all acl
+!
+service snmp
+ listen 0.0.0.0 udp
+ sysinfo contact 333
+ sysinfo location 415a
+ sysinfo name NX2
+ trap iface
+ notify pas1 172.16.14.1
+ acl public
+ enable
+!
+service ssh
+ permit-adm-login
+ enable
+!
+ip forwarding
+!
+cluster
+ slave
+ aux interface ethernet 1
+ aux peer-addr 10.10.1.1/30
+ advert 200
+ mac-advert retry indefinite
+ delay 5
+ time-sync 1
+!
+! $CRC: d9386cfa
